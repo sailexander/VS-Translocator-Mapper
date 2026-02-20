@@ -4,8 +4,8 @@ const coordsOverlay = document.getElementById("coords");
 const tooltip = document.getElementById("tooltip");
 const fileInput = document.getElementById("fileInput");
 
-let canvasWidth, canvasHeight, gridSize = 100;
-let scale = 1, offsetX = 0, offsetY = 0;
+let canvasWidth, canvasHeight, gridSize = 500;
+let scale = 0.1, offsetX = 0, offsetY = 0;
 
 const Mode = {
     MOVE: "move",
@@ -14,6 +14,26 @@ const Mode = {
 };
 let mode = Mode.MOVE;
 let isDragging = false, dragStartX, dragStartY;
+
+let lines = [], points = [];
+class Line {
+    constructor(name, color, x1, y1, x2, y2) {
+        this.name = name;
+        this.color = color;
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
+}
+class Point {
+    constructor(name, color, x, y) {
+        this.name = name;
+        this.color = color;
+        this.x = x;
+        this.y = y;
+    }
+}
 
 function resize() {
     console.log("rezising...");
@@ -85,7 +105,62 @@ function draw() {
     world.clearRect(0, 0, canvasWidth, canvasHeight);
     drawGrid();
     drawAxes();
+
+    lines.forEach(line => {
+        const start = worldToScreen(line.x1, line.y1);
+        const end = worldToScreen(line.x2, line.y2);
+
+        world.strokeStyle = line.color;
+        world.lineWidth = 2;
+        world.beginPath();
+        world.moveTo(start.x, start.y);
+        world.lineTo(end.x, end.y);
+        world.stroke();
+    });
+
+    points.forEach(point => {
+        console.log(point.name);
+        const position = worldToScreen(point.x, point.y);
+        console.log(position);
+        world.fillStyle = point.color;
+        world.beginPath();
+        world.arc(position.x, position.y, 6, 0, Math.PI * 2);
+        world.fill();
+        world.fillStyle = "black";
+        world.fillText(point.name, position.x + 8, position.y);
+    });
 }
+
+function importFile() { fileInput.click(); }
+
+fileInput.addEventListener("change", event => {
+    console.log("loading new file...");
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log(file);
+    const reader = new FileReader();
+    reader.onload = load => {
+        lines = [];
+        points = [];
+        load.target.result.split("\n").forEach(line => {
+            console.log("line");
+            const words = line.trim().split(/\s+/);
+            if (words[0] === "LINE") {
+                lines.push( new Line(
+                    words.slice(6).join(" "), words[1], +words[2], +words[3], +words[4], +words[5]
+                ));
+            }
+            if (words[0] === "POINT") {
+                points.push (new Point(
+                    words.slice(4).join(" "), words[1], +words[2], +words[3]
+                ));
+            }
+        })
+        draw();
+    }
+    reader.readAsText(file);
+})
 
 window.addEventListener("resize", resize);
 
