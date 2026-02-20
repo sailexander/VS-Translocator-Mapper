@@ -4,7 +4,8 @@ const coordsOverlay = document.getElementById("coords");
 const tooltip = document.getElementById("tooltip");
 const fileInput = document.getElementById("fileInput");
 
-let canvasWidth, canvasHeight, gridSize = 500;
+const gridSize = 500, mouseSelectionDistanceThreshhold = 20;
+let canvasWidth, canvasHeight;
 let scale = 0.1, offsetX = 0, offsetY = 0;
 
 const Mode = {
@@ -15,7 +16,6 @@ const Mode = {
 let mode = Mode.MOVE;
 let isDragging = false, dragStartX, dragStartY;
 
-let lines = [], points = [];
 class Line {
     constructor(name, color, x1, y1, x2, y2) {
         this.name = name;
@@ -34,6 +34,8 @@ class Point {
         this.y = y;
     }
 }
+let lines = [], points = [];
+let selected = null;
 
 function resize() {
     console.log("rezising...");
@@ -119,9 +121,7 @@ function draw() {
     });
 
     points.forEach(point => {
-        console.log(point.name);
         const position = worldToScreen(point.x, point.y);
-        console.log(position);
         world.fillStyle = point.color;
         world.beginPath();
         world.arc(position.x, position.y, 6, 0, Math.PI * 2);
@@ -138,29 +138,75 @@ fileInput.addEventListener("change", event => {
     const file = event.target.files[0];
     if (!file) return;
 
-    console.log(file);
     const reader = new FileReader();
     reader.onload = load => {
         lines = [];
         points = [];
         load.target.result.split("\n").forEach(line => {
-            console.log("line");
             const words = line.trim().split(/\s+/);
             if (words[0] === "LINE") {
-                lines.push( new Line(
+                lines.push(new Line(
                     words.slice(6).join(" "), words[1], +words[2], +words[3], +words[4], +words[5]
                 ));
             }
             if (words[0] === "POINT") {
-                points.push (new Point(
+                points.push(new Point(
                     words.slice(4).join(" "), words[1], +words[2], +words[3]
                 ));
             }
         })
+        updateSidebarLists();
         draw();
     }
     reader.readAsText(file);
-})
+});
+
+function updateSidebarLists() {
+    const lineList = document.getElementById("lineList");
+    const pointList = document.getElementById("pointList");
+    lineList.innerHTML = "";
+    pointList.innerHTML = "";
+    lines.forEach((line, index) => {
+        const div = document.createElement("div");
+        div.className = "item" + (selected?.type === "line" && selected.index === index ? " selected" : "");
+        div.textContent = line.name;
+        div.onclick = () => select({ type: "line", index: index });
+        lineList.appendChild(div);
+    });
+    points.forEach((point, index) => {
+        const div = document.createElement("div");
+        div.className = "item" + (selected?.type === "point" && selected.index === index ? " selected" : "");
+        div.textContent = point.name;
+        div.onclick = () => select({ type: "point", index: index });
+        pointList.appendChild(div);
+    })
+}
+
+function select(targetObject) {
+    selected = targetObject;
+    updateSidebarLists();
+    //render Editor
+}
+
+/**
+ * @param {Line} line
+ */
+function isPointCloseToLine(line, pointX, pointY) {
+    const start = worldToScreen(line.x1, line.y1);
+    const end = worldToScreen(line.x2, line.y2);
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const lengthSquared = dx * dx + dy * dy;
+
+    if (lengthSquared === 0) return;
+    const scalar = ((pointX - start.x) * dx + (pointY - start.y) * dy) / lengthSquared;
+    const scalarClamped = Math.max(0, Math.min(1, scalar));
+
+    const projectedX = start.x + scalarClamped * dx;
+    const projectedY = start.y + scalarClamped * dy;
+    return Math.hypot(pointX - projectedX, pointY - projectedY) < mouseSelectionDistanceThreshhold;
+}
 
 window.addEventListener("resize", resize);
 
@@ -185,7 +231,7 @@ canvas.addEventListener("mousemove", event => {
         offsetY += (event.clientY - dragStartY) / scale;
         dragStartX = event.clientX;
         dragStartY = event.clientY;
-        
+
         draw();
     }
 });
@@ -195,6 +241,31 @@ canvas.addEventListener("wheel", event => {
     scale *= event.deltaY < 0 ? 1.1 : 0.9;
     console.log("scaling to " + scale);
     draw();
+});
+
+canvas.addEventListener("click", mouseEvent => {
+    const clickPosition = screenToWorld(mouseEvent.offsetX, mouseEvent.offsetY);
+    let newSelectedObject = null;
+
+    points.forEach((point, index) => {
+        const position = worldToScreen(point.x, point.y);
+        if (Math.hypot(mouseEvent.offsetX - position.x, mouseEvent.offsetY - position.y) < mouseSelectionDistanceThreshhold) {
+            console.log("selecting " + point.name);
+            newSelectedObject = { type: "point", index: index };
+        }
+    });
+
+    if (!newSelectedObject) lines.forEach((line, index) => {
+        if (isPointCloseToLine(line, mouseEvent.offsetX, mouseEvent.offsetY)) {
+            console.log("selecting " + line.name);
+            newSelectedObject = { type: "line", index: index };
+        }
+    });
+
+    if (newSelectedObject) {
+        select(newSelectedObject);
+        return;
+    }
 })
 
 resize();

@@ -39,3 +39,14 @@ body {
 
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
+
+.item {
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.item.selected {
+    color: var(--text-secondary);
+    background: var(--background-secondary);
+}
