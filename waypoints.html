@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Translocator Waypoints</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div id="sidebar">
+
+        <h2>Waypoints</h2>
+
+        <button onclick="importFile()">Import File</button>
+        <button onclick="saveToFile()">Save To File</button>
+        <input type="file" id="fileInput" style="display:none">
+
+        <hr>
+
+        <button id="placePointBtn" onclick="enablePlacePoint()">Toogle Point</button>
+        <button id="placeLineBtn" onclick="enablePlaceLine()">Toggle Line</button>
+        <button onclick="deleteSelected()">Delete Selected</button>
+        
+        <h3>Lines</h3>
+        <button onclick="addLine()">+ Add Line</button>
+        <div id="lineList"></div>
+        
+        <h3>Points</h3>
+        <button onclick="addPoint()">+ Add Point</button>
+        <div id="pointList"></div>
+
+        <h3>Edit</h3>
+        <div id="editor"></div>
+        
+    </div>
+
+    <div id="canvasContainer">
+        <canvas id="canvas"></canvas>
+        <div id="coords"></div>
+        <div id="tooltip"></div>
+    </div>
+</body>
+
+</html>
