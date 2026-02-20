@@ -115,4 +115,11 @@ canvas.addEventListener("mousemove", event => {
     }
 });
 
+canvas.addEventListener("wheel", event => {
+    event.preventDefault();
+    scale *= event.deltaY < 0 ? 1.1 : 0.9;
+    console.log("scaling to " + scale);
+    draw();
+})
+
 resize();
