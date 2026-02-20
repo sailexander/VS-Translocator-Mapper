@@ -1,11 +1,19 @@
 const canvas = document.getElementById("canvas");
 const world = canvas.getContext("2d");
-const coordsDiv = document.getElementById("coords");
+const coordsOverlay = document.getElementById("coords");
 const tooltip = document.getElementById("tooltip");
 const fileInput = document.getElementById("fileInput");
 
 let canvasWidth, canvasHeight, gridSize = 100;
 let scale = 1, offsetX = 0, offsetY = 0;
+
+const Mode = {
+    MOVE: "move",
+    POINT: "point",
+    LINE: "line"
+};
+let mode = Mode.MOVE;
+let isDragging = false, dragStartX, dragStartY;
 
 function resize() {
     console.log("rezising...");
@@ -13,8 +21,6 @@ function resize() {
     canvasHeight = canvas.height = canvas.parentElement.clientHeight;
     draw();
 }
-window.addEventListener("resize", resize);
-resize();
 
 function worldToScreen(x, y) {
     return {
@@ -80,3 +86,33 @@ function draw() {
     drawGrid();
     drawAxes();
 }
+
+window.addEventListener("resize", resize);
+
+canvas.addEventListener("mousedown", event => {
+    if (mode === Mode.MOVE) {
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+    }
+});
+
+canvas.addEventListener("mouseup", () => isDragging = false);
+
+canvas.addEventListener("mouseleave", () => isDragging = false);
+
+canvas.addEventListener("mousemove", event => {
+    const mousePosition = screenToWorld(event.offsetX, event.offsetY);
+    coordsOverlay.textContent = `X:${mousePosition.x.toFixed(2)} Y:${mousePosition.y.toFixed(2)}`;
+
+    if (mode === Mode.MOVE && isDragging) {
+        offsetX += (event.clientX - dragStartX) / scale;
+        offsetY += (event.clientY - dragStartY) / scale;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        
+        draw();
+    }
+});
+
+resize();
