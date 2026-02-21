@@ -40,8 +40,13 @@
 
     <div id="canvasContainer">
         <canvas id="canvas"></canvas>
-        <div id="coords"></div>
         <div id="tooltip"></div>
+
+        <div id="canvasOverlay">
+            <div id="coords"></div>
+            <button id="lineMode" onclick="enablePlaceLine()">+ Add Line</button>
+            <button id="pointMode" onclick="enablePlacePoint()">+ Add Point</button>
+        </div>
     </div>
 </body>
 

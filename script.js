@@ -15,6 +15,8 @@ const Mode = {
 };
 let mode = Mode.MOVE;
 let isDragging = false, dragStartX, dragStartY;
+let tempLineStart = null;
+let previewMouse = null;
 
 class Line {
     constructor(name, color, x1, y1, x2, y2) {
@@ -129,6 +131,18 @@ function draw() {
         world.fillStyle = "black";
         world.fillText(point.name, position.x + 8, position.y);
     });
+
+    if (mode === Mode.LINE && tempLineStart && previewMouse) {
+        const start = worldToScreen(tempLineStart.x, tempLineStart.y);
+        const end = worldToScreen(previewMouse.x, previewMouse.y);
+        world.strokeStyle = "#888";
+        world.setLineDash([5, 5]);
+        world.beginPath();
+        world.moveTo(start.x, start.y);
+        world.lineTo(end.x, end.y);
+        world.stroke();
+        world.setLineDash([]);
+    }
 }
 
 function importFile() { fileInput.click(); }
@@ -163,15 +177,15 @@ fileInput.addEventListener("change", event => {
 
 function saveToFile() {
     let content = "";
-    lines.forEach(line => 
+    lines.forEach(line =>
         content += `LINE ${line.color} ${line.x1} ${line.y1} ${line.x2} ${line.y2} ${line.name}\n`
     );
-    points.forEach(point => 
+    points.forEach(point =>
         content += `POINT ${point.color} ${point.x} ${point.y} ${point.name}\n`
     );
-    const blob = new Blob([content], { type: "text/plain"});
-    const link = document.createElement("a"); 
-    link.href = URL.createObjectURL(blob); 
+    const blob = new Blob([content], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
     link.download = "waypoints.txt";
     link.click();
 }
@@ -186,7 +200,7 @@ function updateSidebarLists() {
         div.className = "item" + (selected?.type === "line" && selected.index === index ? " selected" : "");
         div.textContent = line.name;
         div.onclick = () => select({ type: "line", index: index });
-        
+
         const deleteButton = document.createElement("button");
         deleteButton.className = "delete";
         deleteButton.textContent = "delete";
@@ -194,7 +208,7 @@ function updateSidebarLists() {
             deleteLine(index);
             event.stopPropagation();
         }
-        
+
         div.appendChild(deleteButton);
         lineList.appendChild(div);
     });
@@ -228,7 +242,7 @@ function updateSidebarEditor() {
     const editor = document.getElementById("editor");
     editor.innerHTML = "";
     if (!selected) return;
-    
+
     const target = selected.type === "line" ? lines[selected.index] : points[selected.index];
 
     function field(labelText, value, callback, type = "text") {
@@ -289,6 +303,36 @@ function deletePoint(index) {
     draw();
 }
 
+function clearModes() {
+    console.log("clear");
+    mode = Mode.MOVE;
+    tempLineStart = null;
+    document.getElementById("lineMode").classList.remove("activeMode");
+    document.getElementById("pointMode").classList.remove("activeMode");
+}
+
+function enablePlacePoint() {
+    if (mode === Mode.POINT) {
+        clearModes();
+    } else {
+        console.log("point");
+        clearModes();
+        mode = Mode.POINT;
+        document.getElementById("pointMode").classList.add("activeMode");
+    }
+}
+
+function enablePlaceLine() {
+    if (mode === Mode.LINE) {
+        clearModes();
+    } else {
+        console.log("line");
+        clearModes();
+        mode = Mode.LINE;
+        document.getElementById("lineMode").classList.add("activeMode");
+    }
+}
+
 /**
  * @param {Line} line
  */
@@ -326,6 +370,7 @@ canvas.addEventListener("mouseleave", () => isDragging = false);
 canvas.addEventListener("mousemove", event => {
     const mousePosition = screenToWorld(event.offsetX, event.offsetY);
     coordsOverlay.textContent = `X:${mousePosition.x.toFixed(2)} Y:${mousePosition.y.toFixed(2)}`;
+    previewMouse = mousePosition;
 
     if (mode === Mode.MOVE && isDragging) {
         offsetX += (event.clientX - dragStartX) / scale;
@@ -333,6 +378,8 @@ canvas.addEventListener("mousemove", event => {
         dragStartX = event.clientX;
         dragStartY = event.clientY;
 
+        draw();
+    } else {
         draw();
     }
 });
@@ -366,6 +413,24 @@ canvas.addEventListener("click", mouseEvent => {
     if (newSelectedObject) {
         select(newSelectedObject);
         return;
+    }
+
+    if (mode === Mode.POINT) {
+        points.push(new Point("Point " + (points.length + 1), "ff0000", clickPosition.x, clickPosition.y));
+        updateSidebarLists();
+        draw();
+        clearModes();
+    }
+
+    if (mode === Mode.LINE) {
+        if (!tempLineStart) {
+            tempLineStart = clickPosition;
+        } else {
+            lines.push(new Line("Line " + (lines.length + 1), "ff0000", tempLineStart.x, tempLineStart.y, clickPosition.x, clickPosition.y));
+            updateSidebarLists();
+            draw();
+            clearModes();
+        }
     }
 })
 
