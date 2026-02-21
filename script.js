@@ -171,6 +171,16 @@ function updateSidebarLists() {
         div.className = "item" + (selected?.type === "line" && selected.index === index ? " selected" : "");
         div.textContent = line.name;
         div.onclick = () => select({ type: "line", index: index });
+        
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete";
+        deleteButton.textContent = "delete";
+        deleteButton.onclick = event => {
+            deleteLine(index);
+            event.stopPropagation();
+        }
+        
+        div.appendChild(deleteButton);
         lineList.appendChild(div);
     });
     points.forEach((point, index) => {
@@ -178,8 +188,18 @@ function updateSidebarLists() {
         div.className = "item" + (selected?.type === "point" && selected.index === index ? " selected" : "");
         div.textContent = point.name;
         div.onclick = () => select({ type: "point", index: index });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete";
+        deleteButton.textContent = "delete";
+        deleteButton.onclick = event => {
+            deletePoint(index);
+            event.stopPropagation();
+        }
+
+        div.appendChild(deleteButton);
         pointList.appendChild(div);
-    })
+    });
 }
 
 function select(targetObject) {
@@ -235,6 +255,22 @@ function addLine() {
 function addPoint() {
     points.push(new Point("Point " + (points.length + 1), "ff0000", 0, 0));
     updateSidebarLists();
+    draw();
+}
+
+function deleteLine(index) {
+    if (selected && selected.type === "line" && selected.index === index) selected = null;
+    lines.splice(index, 1);
+    updateSidebarLists();
+    updateSidebarEditor();
+    draw();
+}
+
+function deletePoint(index) {
+    if (selected && selected.type === "point" && selected.index === index) selected = null;
+    points.splice(index, 1);
+    updateSidebarLists();
+    updateSidebarEditor();
     draw();
 }
 

@@ -16,6 +16,8 @@ body {
     width: 300px;
     padding: 10px;
 
+    overflow: auto;
+
     color: var(--text-primary);
     background: var(--background-primary);
 }
@@ -41,6 +43,7 @@ body {
 }
 
 .item {
+    display: flex;
     padding: 6px;
     cursor: pointer;
     border-radius: 6px;
@@ -49,6 +52,10 @@ body {
 .item.selected {
     color: var(--text-secondary);
     background: var(--background-secondary);
+}
+
+.item>.delete {
+    margin-left: auto;
 }
 
 label {
