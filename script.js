@@ -372,6 +372,18 @@ canvas.addEventListener("mousemove", event => {
     coordsOverlay.textContent = `X:${mousePosition.x.toFixed(2)} Y:${mousePosition.y.toFixed(2)}`;
     previewMouse = mousePosition;
 
+    let found = false;
+    lines.forEach((line, index) => {
+        if (isPointCloseToLine(line, event.offsetX, event.offsetY)) {
+            tooltip.style.display = "block";
+            tooltip.style.left = event.offsetX + 10 + "px";
+            tooltip.style.top = event.offsetY + 10 + "px";
+            tooltip.textContent = line.name;
+            found = true;
+        }
+    });
+    if (!found) tooltip.style.display = "none";
+
     if (mode === Mode.MOVE && isDragging) {
         offsetX += (event.clientX - dragStartX) / scale;
         offsetY += (event.clientY - dragStartY) / scale;

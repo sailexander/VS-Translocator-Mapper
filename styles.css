@@ -58,6 +58,20 @@ body {
     background-color: var(--background-secondary);
 }
 
+#tooltip {
+    position: absolute;
+    display: none;
+
+    padding: 4px 8px;
+    border-radius: 4px;
+
+    font-size: 12px;
+    background: var(--background-primary);
+    color: var(--text-primary);
+
+    pointer-events: none;
+}
+
 .item {
     display: flex;
     padding: 6px;
