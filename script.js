@@ -6,7 +6,7 @@ const fileInput = document.getElementById("fileInput");
 
 const gridSize = 500, mouseSelectionDistanceThreshhold = 20;
 let canvasWidth, canvasHeight;
-let scale = 0.1, offsetX = 0, offsetY = 0;
+let scale = 0.05, offsetX = 0, offsetY = 0;
 
 const Mode = {
     MOVE: "move",
@@ -184,8 +184,58 @@ function updateSidebarLists() {
 
 function select(targetObject) {
     selected = targetObject;
+    console.log("selected " + selected.type + " " + selected.index);
     updateSidebarLists();
-    //render Editor
+    updateSidebarEditor();
+}
+
+function updateSidebarEditor() {
+    if (!selected) return;
+
+    const editor = document.getElementById("editor");
+    editor.innerHTML = "";
+    const target = selected.type === "line" ? lines[selected.index] : points[selected.index];
+
+    function field(labelText, value, callback, type = "text") {
+        const label = document.createElement("label");
+        label.textContent = labelText;
+
+        const input = document.createElement("input");
+        input.type = type;
+        input.value = value;
+        input.oninput = () => {
+            callback(input.value);
+            updateSidebarLists();
+            draw();
+        };
+
+        label.appendChild(input);
+        editor.appendChild(label);
+    }
+    console.log(target);
+    if (selected.type === "line") {
+        field("x1", target.x1, v => target.x1 = +v);
+        field("y1", target.y1, v => target.y1 = +v);
+        field("x2", target.x2, v => target.x2 = +v);
+        field("y2", target.y2, v => target.y2 = +v);
+    } else {
+        field("x", target.x, v => target.x = +v);
+        field("y", target.y, v => target.y = +v);
+    }
+    field("Name", target.name, v => target.name = v);
+    field("Color", target.color, v => target.color = v, "color");
+}
+
+function addLine() {
+    lines.push(new Line("Line " + (lines.length + 1), "ff0000", 0, 0, 0, 0));
+    updateSidebarLists();
+    draw();
+}
+
+function addPoint() {
+    points.push(new Point("Point " + (points.length + 1), "ff0000", 0, 0));
+    updateSidebarLists();
+    draw();
 }
 
 /**

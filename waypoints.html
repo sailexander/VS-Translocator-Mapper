@@ -16,20 +16,22 @@
         <button onclick="importFile()">Import File</button>
         <button onclick="saveToFile()">Save To File</button>
         <input type="file" id="fileInput" style="display:none">
-
+        
         <hr>
 
-        <button id="placePointBtn" onclick="enablePlacePoint()">Toogle Point</button>
-        <button id="placeLineBtn" onclick="enablePlaceLine()">Toggle Line</button>
-        <button onclick="deleteSelected()">Delete Selected</button>
-        
         <h3>Lines</h3>
+        <!-- <button id="placePointBtn" onclick="enablePlacePoint()">Toogle Point</button> -->
         <button onclick="addLine()">+ Add Line</button>
         <div id="lineList"></div>
+
+        <hr>
         
         <h3>Points</h3>
+        <!-- <button id="placeLineBtn" onclick="enablePlaceLine()">Toggle Line</button> -->
         <button onclick="addPoint()">+ Add Point</button>
         <div id="pointList"></div>
+
+        <hr>
 
         <h3>Edit</h3>
         <div id="editor"></div>

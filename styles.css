@@ -50,3 +50,13 @@ body {
     color: var(--text-secondary);
     background: var(--background-secondary);
 }
+
+label {
+    display: flex;
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+input {
+    margin-left: auto;
+}
