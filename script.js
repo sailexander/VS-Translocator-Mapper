@@ -252,6 +252,7 @@ function updateSidebarEditor() {
         const input = document.createElement("input");
         input.type = type;
         input.value = value;
+        input.onclick = () => input.select();
         input.oninput = () => {
             callback(input.value);
             updateSidebarLists();
@@ -369,7 +370,7 @@ canvas.addEventListener("mouseleave", () => isDragging = false);
 
 canvas.addEventListener("mousemove", event => {
     const mousePosition = screenToWorld(event.offsetX, event.offsetY);
-    coordsOverlay.textContent = `X:${mousePosition.x.toFixed(2)} Y:${mousePosition.y.toFixed(2)}`;
+    coordsOverlay.textContent = `X:${mousePosition.x.toFixed(0)} Y:${mousePosition.y.toFixed(0)}`;
     previewMouse = mousePosition;
 
     let found = false;
