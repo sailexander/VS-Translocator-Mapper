@@ -161,6 +161,21 @@ fileInput.addEventListener("change", event => {
     reader.readAsText(file);
 });
 
+function saveToFile() {
+    let content = "";
+    lines.forEach(line => 
+        content += `LINE ${line.color} ${line.x1} ${line.y1} ${line.x2} ${line.y2} ${line.name}\n`
+    );
+    points.forEach(point => 
+        content += `POINT ${point.color} ${point.x} ${point.y} ${point.name}\n`
+    );
+    const blob = new Blob([content], { type: "text/plain"});
+    const link = document.createElement("a"); 
+    link.href = URL.createObjectURL(blob); 
+    link.download = "waypoints.txt";
+    link.click();
+}
+
 function updateSidebarLists() {
     const lineList = document.getElementById("lineList");
     const pointList = document.getElementById("pointList");
@@ -210,10 +225,10 @@ function select(targetObject) {
 }
 
 function updateSidebarEditor() {
-    if (!selected) return;
-
     const editor = document.getElementById("editor");
     editor.innerHTML = "";
+    if (!selected) return;
+    
     const target = selected.type === "line" ? lines[selected.index] : points[selected.index];
 
     function field(labelText, value, callback, type = "text") {
